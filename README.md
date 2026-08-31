@@ -5,6 +5,8 @@ video, then reports every matched frame and the person's image-plane
 coordinates. This repository targets the two supplied FootfallCam snapshots;
 both images are treated as examples of **one identity**.
 
+![Pretrained gallery-ReID person search architecture](diagrams/architecture.svg)
+
 ```text
 video → YOLO26n person detector → BoT-SORT tracker
       → dense bootstrap + sampled YOLO26 ReID embeddings
