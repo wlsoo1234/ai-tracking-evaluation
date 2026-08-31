@@ -1,0 +1,21 @@
+# Pin the already-installed CPU-only torch so `ultralytics` doesn't pull a
+# CUDA build. If you're setting this up fresh with a GPU available, drop
+# these two pins and let pip resolve torch normally before installing the
+# rest.
+torch==2.13.0
+torchvision
+
+ultralytics>=8.3
+onnxruntime>=1.20,<2
+onnx>=1.16,<2
+ml-dtypes>=0.5.4,<0.6
+# Upper bounds added as general reproducibility hygiene: these floors had no
+# ceiling, so a fresh install could silently resolve to opencv-python 5.0 /
+# numpy 2.2 (major version bumps past what this repo's classical-CV
+# similarity threshold, reference_matching.similarity_threshold, was
+# calibrated against). An unbounded floor on libraries a color-histogram
+# comparison is numerically sensitive to is a latent risk worth pinning
+# against even without a confirmed incident.
+opencv-python>=4.8,<5
+numpy>=1.26,<2
+pyyaml>=6.0

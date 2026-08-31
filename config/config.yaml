@@ -1,0 +1,47 @@
+# Reference-photo person search configuration (match_tag_wearer.py).
+# All time-based parameters are expressed in SECONDS, not frames, and are
+# converted to frame counts at runtime using the video's own fps. This is
+# what lets the same config generalize to a test video with a different
+# frame rate, instead of overfitting to sample.mp4.
+
+video:
+  path: "sample.mp4"
+
+person_detector:
+  # Pretrained COCO YOLO26n, person class only. No fine-tuning performed —
+  # this repo ships no custom person-detection weights or training data.
+  model: "yolo26n.pt"
+  device: "auto"          # auto | cpu | cuda
+  conf_threshold: 0.20    # lowered from the usual 0.25-0.4 default: this is
+                           # an overhead fisheye view, out of distribution for
+                           # COCO's mostly eye-level pedestrian images, so
+                           # recall at the default threshold is too low
+                           # (empirically verified on sample.mp4 frames).
+  imgsz: 960
+  classes: [0]
+
+tracker:
+  # Project-owned BoT-SORT config enables native detector appearance features.
+  type: "botsort"
+  config_file: "config/botsort_reid.yaml"
+
+runtime:
+  seed: 42
+  log_level: "INFO"
+
+reference_matching:
+  # Repeated reference photos form one identity gallery. Embeddings are sampled
+  # periodically and aggregated over each complete tracklet.
+  model: "yolo26n-reid.onnx"
+  # New/short tracks are embedded on every observation until min_observations
+  # is reached; established tracks then use this lower-cost periodic cadence.
+  sample_interval_s: 0.20
+  reference_rotations: [0, 90, 180, 270]
+  reference_consistency_warning: 0.40
+  min_observations: 4
+  top_k: 10
+  track_similarity_threshold: 0.60
+  # Short true tracks can contain one reference-like view surrounded by severe
+  # fisheye/pose distortion. This stricter peak path still requires the four
+  # observations above; it does not admit a one-frame detection by itself.
+  peak_similarity_threshold: 0.70
